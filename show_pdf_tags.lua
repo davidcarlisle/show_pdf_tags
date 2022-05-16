@@ -395,7 +395,7 @@ local function print_tree(tree)
             print(prefix .. '┝━━' .. l:gsub('\n', '\n' .. prefix .. '│  '))
           end
           recurse(obj.kids, prefix .. '├─', prefix .. '└─', prefix .. '│ ', prefix .. '  ')
-        else
+        elseif #lines > 0 then
           for i=1, #lines-1 do
             print(prefix .. '┝━━' .. lines[i]:gsub('\n', '\n' .. prefix .. '│  '))
           end

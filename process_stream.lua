@@ -1,6 +1,7 @@
 local lpeg = lpeg or require'lpeg'
 local pdfscanner = pdfscanner or require'pdfscanner'
 local utf16be_to_utf8 = require'decode'.utf16be_to_utf8
+local text_string_to_utf8 = require'decode'.text_string_to_utf8
 
 local lookup = {}
 
@@ -136,9 +137,9 @@ local operators = {
       props = props,
     }
     stack[#stack + 1] = top
-    if props.MCID then
+    if props.ActualText or props.MCID then
       top.text_buffer = ctx.text_buffer
-      ctx.text_buffer = {}
+      ctx.text_buffer = not props.ActualText and {}
     end
     if tag == 'Artifact' then
       top.artifact = ctx.artifact
@@ -154,14 +155,19 @@ local operators = {
     local props = top.props
     if props then
       top.props = nil
+      local text
+      local outer_text_buffer = top.text_buffer
+      if props.ActualText and (props.MCID or outer_text_buffer) then
+        text = type(props) == 'table' and props.ActualText[2] or props.ActualText
+        text = text_string_to_utf8:match(text)
+      end
       if props.MCID then
-        local content = table.concat(ctx.text_buffer)
-        local outer_text_buffer = top.text_buffer
-        if outer_text_buffer then
-          outer_text_buffer[#outer_text_buffer + 1] = content
-        end
+        text = text or table.concat(ctx.text_buffer)
         local MCID = type(props) == 'table' and props.MCID[2] or props.MCID
-        ctx.marked_content_elements[MCID] = content
+        ctx.marked_content_elements[MCID] = text
+      end
+      if text and outer_text_buffer then
+        outer_text_buffer[#outer_text_buffer + 1] = text
       end
     end
     for k, v in next, top do
