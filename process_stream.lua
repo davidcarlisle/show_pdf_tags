@@ -190,6 +190,13 @@ return function(stream, resources)
     -- current_font = nil,
     marked_content_elements = {},
   }
+  if pdfe.type(stream) == 'pdfe.array' then
+    local arr = {}
+    for i=1, #stream do
+      arr[i] = stream[i]
+    end
+    stream = arr
+  end
   pdfscanner.scan(stream, operators, ctx)
   return ctx.marked_content_elements
 end

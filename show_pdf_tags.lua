@@ -269,9 +269,9 @@ local function open(filename)
     end
   end
   ctx.type_maps = type_maps
-  ctx.ClassMaps = structroot.ClassMaps
+  ctx.ClassMap = structroot.ClassMap
   local elements = convert_kids(ctx, structroot)
-  ctx.ClassMaps = nil
+  ctx.ClassMap = nil
 
   for _, obj in ipairs(ctx.ref_entries) do
     local refs = obj.ref
@@ -329,8 +329,8 @@ local function print_tree(tree)
       else
         local mark = obj.kids and ':' or ''
         local subtype = obj.subtype
-        local mapped = subtype
-        mapped = mapped == subtype and '' or ' / ' .. format_subtype(mapped)
+        local mapped = subtype.mapped
+        mapped = mapped and ' / ' .. format_subtype(mapped) or ''
         print(string.format('%s%s%s%s', first_prefix, format_subtype(subtype), mapped, mark))
         local lines = {}
         if referenced[obj] then
