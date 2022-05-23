@@ -324,7 +324,7 @@ local function print_tree(tree)
         local t = obj.Obj.Type
         t = t and string.format(' of type %s', t) or ''
         local page = obj.page
-        page = page and string.format('on page %i', page) or '' -- TODO: Should eventually become always true
+        page = page and string.format(' on page %i', page) or '' -- TODO: Should eventually become always true
         print(string.format('%sReferenced object%s%s', first_prefix, t, page))
       else
         local mark = obj.kids and ':' or ''
