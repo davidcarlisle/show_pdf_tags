@@ -5,3 +5,5 @@ Mostly intended for development purposes. Requires LuaTeX (or at least texlua) t
 Usage:
 
     texlua ./show_pdf_tags.lua <filename>.pdf
+
+The output format is documented in ./format.pdf.

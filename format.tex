@@ -1,0 +1,129 @@
+\documentclass[8pt,a4paper]{article}
+\usepackage{csquotes}
+\DeclareFontFamily{TU}{notoserif}{}
+\DeclareFontShape{TU}{notoserif}{m}{n}{%
+  <-> kpse:NotoSerif-Regular.ttf:mode=harf,script=latn,language=eng
+}{}
+\DeclareFontShape{TU}{notoserif}{b}{n}{%
+  <-> kpse:NotoSerif-Bold.ttf:mode=harf,script=latn,language=eng
+}{}
+\DeclareFontShape{TU}{notoserif}{m}{it}{%
+  <-> kpse:NotoSerif-Italic.ttf:mode=harf,script=latn,language=eng
+}{}
+\DeclareFontShape{TU}{notoserif}{b}{it}{%
+  <-> kpse:NotoSerif-BoldItalic.ttf:mode=harf,script=latn,language=eng
+}{}
+\DeclareFontFamily{TU}{notomono}{}
+\DeclareFontShape{TU}{notomono}{m}{n}{%
+  <-> kpse:NotoSansMono-Regular.ttf:mode=harf,script=latn,language=eng
+}{}
+\renewcommand\rmdefault{notoserif}
+\renewcommand\ttdefault{notomono}
+\title{The output format of show\_pdf\_tags.lua}
+\author{Marcel F. Krüger}
+\date{\today}
+\begin{document}
+\emergencystretch=2em
+\maketitle
+\section{Output format description}
+The output of \texttt{show\_pdf\_tags.lua} when invoked on a tagged PDF file is a tree structure containing all tags present in the structure hierarchy.
+
+Every Structure Element gets printed in the form
+\begin{verbatim}
+<Tag> (<Tag NS>) / <Mapped> (<Mapped NS>):
+┝━<Meta 1>
+┝━<Meta 2>
+┝━<Meta ...>
+┝━<Meta n>
+├─<Child 1>
+├─<Child 2>
+├─<Child ...>
+└─<Child n>
+\end{verbatim}
+Here \texttt{<Tag>} is the subtype of the structure element and \texttt{<Tag NS>} it's namespace.
+If the tag does not belong to any namespace than \texttt{(<Tag NS>)} is omitted. 
+
+In case that the structure element is role mapped then \texttt{<Mapped> (<Mapped NS>)} similarly describes the role map target.
+This omits any intermediate mappings. So if \texttt{A} gets mapped to \texttt{B} which in turn is mapped to \texttt{C}, then
+only \texttt{A / C} is printed, the intermediate step \texttt{B} is ignored to keep the output readable.
+
+The entries \texttt{<Meta ?>} contain additional information about the structure element.
+The possible fields here are
+\begin{itemize}
+  \item \enquote{\texttt{Referenced as object 42}}: This is present on any object which is referenced (though \texttt{/Ref}) by any other object.
+    The number is an arbitrarily chosen natural number which uniquely identifies the element and serves as a global identifier.
+  \item \enquote{\texttt{Title: Some title}}: \enquote{\texttt{Some title}} is the title as specified though the \texttt{/T} key.
+  \item \enquote{\texttt{Language: xx-XX}}: The structure element specifies language identifier \texttt{xx-XX} though \texttt{/Lang}.
+  \item \enquote{\texttt{Expansion: Expanded}}: The structure element specifies the expansion \texttt{Expanded} though \texttt{/E}.
+  \item \enquote{\texttt{Alternate text: Text}}: The structure element specifies the alternate text \texttt{Text} though \texttt{/Alt}.
+  \item \enquote{\texttt{Actual text: Text}}: The structure element specifies the actual text \texttt{Text} though \texttt{/ActualText}.
+  \item \enquote{\texttt{Associated files are present}}: At least one associated file is specified though \texttt{/AF}.
+    Beside this note associated files are currently ignored.
+  \item \enquote{\texttt{Attributes:}}: Attributes are present. The attributes are printed in the following lines grouped by attribute owner in the form
+    \begin{verbatim}
+Attributes:
+├<Owner 1>
+│├<Attr Name 1>: <Attr value 1>
+│├<Attr Name 2>: <Attr value 2>
+│└<Attr Name n>: <Attr value n>
+├...
+└<Owner n>
+ ├<Attr Name 1>: <Attr value 1>
+ ├<Attr Name 2>: <Attr value 2>
+ └<Attr Name n>: <Attr value n>
+    \end{verbatim}
+    For attributes owned by a namespace the \texttt{Owner 1} field is the namespace identifier.
+    For other owners it's a slash followed by the owner name.
+  \item \enquote{\texttt{References object(s) 42, 142, 242}}: The element references though \texttt{/Ref} the elements which are marked with these identifiers.
+\end{itemize}
+
+Finally \texttt{Child 1} to \texttt{Child n} describes the child elements. These can have one of three forms:
+\begin{itemize}
+  \item Another structure element
+  \item A object reference using \texttt{OBJR}. These are represented as
+    \begin{verbatim}
+Referenced object of type <Type> on page <Page>
+    \end{verbatim}
+
+    Here \texttt{<Type>} represents the type of the references objct as specified by \texttt{/Type}. \enquote{\texttt{ of type <Type>}} is omitted if the referenced object does not explicitly specify a type.
+    Page is the page index on which the referenced object appears.
+  \item Marked content. Marked content is represented as
+    \begin{verbatim}
+Marked content on page <page>: <text>
+    \end{verbatim}
+    Here \texttt{<page>} is the page index of the page on which the marked content appears and \texttt{<text>} is the text content of the marked content, converted to Unicode though ToUnicode maps and specified ActualText. Other content (including but not limited to XObjects and non-text drawing operators) is ignored.
+
+    This \texttt{<text>} is provided to help getting a general idea which content is marked and should not be relied upon to get a full understanding of the content of the marked content sequence.
+\end{itemize}
+
+\section{Example output}
+An example for a simple document could be
+\begin{verbatim}
+Document (http://iso.org/pdf2/ssn):
+└─Section (http://typesetting.eu/test/pdfns) / Sect (http://iso.org/pdf2/ssn):
+  ├─H (http://iso.org/pdf2/ssn):
+  │ ├─Lbl (http://iso.org/pdf2/ssn):
+  │ │ └─Marked content on page 1: 1
+  │ └─Marked content on page 1: First section
+  └─P (http://iso.org/pdf2/ssn):
+    ┝━━Attributes:
+    │  └/Layout:
+    │   ├LineHeight: 11
+    │   ├SpaceAfter: 4.625
+    │   └TextAlign: "Center"
+    ├─Marked content on page 1: Some example content
+    ├─Lbl (http://iso.org/pdf2/ssn):
+    │ └─Marked content on page 1: 1
+    ├─FENote (http://iso.org/pdf2/ssn):
+    │ └─P (http://iso.org/pdf2/ssn):
+    │   ├─Lbl (http://iso.org/pdf2/ssn):
+    │   │ └─Marked content on page 1: 1
+    │   └─Marked content on page 1: With a footnote
+    ├─Marked content on page 1: .
+    └─Link (http://iso.org/pdf2/ssn):
+      ┝━━Alternate text: A link to a well known search engine
+      └─Link (http://iso.org/pdf2/ssn):
+        ├─Marked content on page 1: Google
+        └─Referenced object of type Annot on page 1
+\end{verbatim}
+\end{document}
