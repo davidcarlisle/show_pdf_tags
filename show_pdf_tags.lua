@@ -239,7 +239,10 @@ local function open(filename)
   ctx.id_map = id_map
   ctx.ref_entries = {}
 
-  local structroot = assert(catalog.StructTreeRoot)
+  local structroot = catalog.StructTreeRoot
+  if not structroot then
+    return {}, ctx
+  end
   local type_maps = {}
   do
     local namespaces = structroot.Namespaces
