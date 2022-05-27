@@ -1,4 +1,9 @@
 #!/usr/bin/env texlua
+local mypath = string.match(debug.getinfo(1, 'S').source, '@(.*)[/\\][^/\\]+')
+if mypath then
+  package.path = mypath .. '/?.lua;' .. package.path
+end
+
 local pdfe = pdfe or require'pdfe'
 local process_stream = require'process_stream'
 local text_string_to_utf8 = require'decode'.text_string_to_utf8
