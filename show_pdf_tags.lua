@@ -451,7 +451,7 @@ local function print_tree_xml(tree)
         local subtype = obj.subtype
         local mapped = subtype.mapped
         mapped = mapped and ' / ' .. format_subtype(mapped) or ''
-        print(string.format('%s%s%s', indent, format_subtype_xml(subtype), mapped))
+        print(string.format('%s%s', indent, format_subtype_xml(subtype)))
         local lines = {}
         if obj.title then
           lines[#lines + 1] = 'title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
@@ -494,6 +494,9 @@ local function print_tree_xml(tree)
         -- attributes = convert_attributes(elem.A),
         -- attribute_classes = convert_attribute_classes(elem.C),
 	lines[#lines+1] = ">"
+	if mapped ~= "" then
+          lines[#lines+1] = '<?Map ' .. mapped .. ' ?>'
+	end
         if referenced[obj] then
           lines[#lines + 1] = '<?ReferencedAs object ' .. referenced[obj] .. ' ?>'
         end
