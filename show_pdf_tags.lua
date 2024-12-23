@@ -449,7 +449,7 @@ local function print_tree_xml(tree)
         print(string.format('%s%s%s', indent, format_subtype_xml(subtype), mapped))
         local lines = {}
         if obj.title then
-          lines[#lines + 1] = 'title="' .. obj.title .. '"'
+          lines[#lines + 1] = 'title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
         end
         if obj.lang then
           lines[#lines + 1] = 'lang="' .. obj.lang .. '"'
@@ -458,10 +458,10 @@ local function print_tree_xml(tree)
           lines[#lines + 1] = 'expansion="' .. obj.expanded  .. '"'
         end
         if obj.alt then
-          lines[#lines + 1] = ' alt="' .. obj.alt  .. '"'
+          lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
         end
         if obj.actual_text then
-          lines[#lines + 1] = ' actualtext="' .. obj.actual_text .. '"'
+          lines[#lines + 1] = ' actualtext="' .. obj.actual_text:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
         end
         if obj.associated_files then
           lines[#lines + 1] = ' af="yes"'
