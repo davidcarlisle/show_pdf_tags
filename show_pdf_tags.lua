@@ -270,7 +270,10 @@ local function open(filename)
           mapped = {mapped, false}
         end
         if mapped then
-          element.mapped = type_maps[mapped[2]][mapped[1]]
+	  local tm = type_maps[mapped[2]]
+	  if tm and tm[mapped[1]] then
+-- 	    element.mapped = tm[mapped[1]]
+	  end
         end
         return element
       end})
@@ -321,6 +324,15 @@ local function format_subtype(subtype)
     return subtype.subtype
   end
 end
+
+local function format_subtype_xml(subtype)
+  if subtype.namespace then
+    return string.format('<%s xmlns="%s"', subtype.subtype, subtype.namespace)
+  else
+    return "<" .. subtype.subtype
+  end
+end
+
 local function print_tree(tree)
   local referenced = mark_references(tree)
   local function recurse(objs, first_prefix, last_first_prefix, prefix, last_prefix)
@@ -415,11 +427,105 @@ local function print_tree(tree)
   return recurse(tree, '', '', '', '')
 end
 
+
+
+
+local function print_tree_xml(tree)
+  local referenced = mark_references(tree)
+  local function recurse(objs, indent)
+    for i, obj in ipairs(objs) do
+      if obj.type == 'MCR' then
+        print(string.format('%s<?MarkedContent on page %i ?>%s', indent, obj.page, obj.content:gsub('&','&amp;'):gsub('<','&lt;')))
+      elseif obj.type == 'OBJR' then
+        local t = obj.Obj.Type
+        t = t and string.format(' of type %s', t) or ''
+        local page = obj.page
+        page = page and string.format(' on page %i', page) or '' -- TODO: Should eventually become always true
+        print(string.format('%s<?ReferencedObject%s%s ?>', indent, t, page))
+      else
+        local subtype = obj.subtype
+        local mapped = subtype.mapped
+        mapped = mapped and ' / ' .. format_subtype(mapped) or ''
+        print(string.format('%s%s%s', indent, format_subtype_xml(subtype), mapped))
+        local lines = {}
+        if obj.title then
+          lines[#lines + 1] = 'title="' .. obj.title .. '"'
+        end
+        if obj.lang then
+          lines[#lines + 1] = 'lang="' .. obj.lang .. '"'
+        end
+        if obj.expanded then
+          lines[#lines + 1] = 'expansion="' .. obj.expanded  .. '"'
+        end
+        if obj.alt then
+          lines[#lines + 1] = ' alt="' .. obj.alt  .. '"'
+        end
+        if obj.actual_text then
+          lines[#lines + 1] = ' actualtext="' .. obj.actual_text .. '"'
+        end
+        if obj.associated_files then
+          lines[#lines + 1] = ' af="yes"'
+        end
+        if obj.attributes then
+          local owners = {}
+          for k in next, obj.attributes do
+            owners[#owners + 1] = k
+          end
+          table.sort(owners)
+          for i=1, #owners do
+            local attrs = {}
+            for k in next, obj.attributes[owners[i]] do
+              attrs[#attrs + 1] = k
+            end
+            table.sort(attrs)
+            for j=1, #attrs do
+              attrs[j] = attrs[j] .. '="' .. (require'inspect'(obj.attributes[owners[i]][attrs[j]])):gsub('"','') .. '"'
+            end
+            table.insert(attrs, 1, (owners[i]:sub(1, #owner_prefix) == owner_prefix and  owners[i]:sub(#owner_prefix+1) or  owners[i]) .. '-')
+            owners[i] = table.concat(attrs, ':+', 1, #attrs-1) .. '' .. attrs[#attrs]
+          end
+          lines[#lines + 1] = owners[#owners]
+        end
+        -- attributes = convert_attributes(elem.A),
+        -- attribute_classes = convert_attribute_classes(elem.C),
+	lines[#lines+1] = ">"
+        if referenced[obj] then
+          lines[#lines + 1] = '<?ReferencedAs object ' .. referenced[obj] .. ' ?>'
+        end
+        if obj.ref then
+          local refs = {}
+          for i, r in ipairs(obj.ref) do
+            refs[i] = referenced[r]
+          end
+          lines[#lines + 1] = '<?Referencesobject' .. (refs[2] and 's' or '') .. ' ' .. table.concat(refs, ', ') ..' ?>'
+        end
+        if obj.kids then
+          for _, l in ipairs(lines) do
+            print(indent .. '  ' .. l:gsub('\n', '\n' .. indent .. '  '))
+          end
+          recurse(obj.kids, indent .. ' ')
+	  print(indent .. "</" .. subtype.subtype ..">")
+        elseif #lines > 0 then
+          for i=1, #lines-1 do
+            print(indent .. '  ' .. lines[i]:gsub('\n', '\n' .. indent .. '  '))
+          end
+          print(indent .. '  ' .. lines[#lines]:gsub('\n', '\n' .. indent .. '   '))
+	  print(indent .. "</" .. subtype.subtype ..">")
+        end
+      end
+    end
+  end
+  return recurse(tree, '', '', '', '')
+end
+
 if not arg[1] then
   io.stderr:write(string.format('Missing argument. Usage: %s <filename>.pdf\n', arg[0]))
   return
 end
 
 local struct, ctx = assert(open(arg[1]))
-print_tree(struct, '')
+print_tree_xml(struct, '')
+
+
+
 -- print(require'inspect'(struct))
