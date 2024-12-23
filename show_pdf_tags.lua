@@ -360,7 +360,15 @@ local function print_tree(tree)
           lines[#lines + 1] = 'Actual text: ' .. obj.actual_text
         end
         if obj.associated_files then
-          lines[#lines + 1] = 'Associated files are present'
+          local af_output = ''
+          local total_count = #af_output
+          for i, file in ipairs(obj.associated_files) do
+            if file.EF.F then
+              af_output = '\n└─Content: ' .. pdfe.readwholestream(file.EF.F, true):gsub('\n', '\n  ')
+              -- recurse(obj.kids, prefix .. '├─', prefix .. '└─', prefix .. '│ ', prefix .. '  ')
+            end
+          end
+          lines[#lines + 1] = 'Associated files are present:' .. af_output
         end
         if obj.attributes then
           local owners = {}
