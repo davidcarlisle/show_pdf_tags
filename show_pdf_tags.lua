@@ -270,7 +270,7 @@ local function open(filename)
           mapped = {mapped, false}
         end
         if mapped then
-          element.mapped = type_maps[mapped[2]][mapped[1]]
+          element.mapped = type_maps[mapped[2] and mapped[2].NS][mapped[1]]
         end
         return element
       end})
