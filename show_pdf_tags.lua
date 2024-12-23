@@ -481,8 +481,8 @@ local function print_tree_xml(tree)
             for j=1, #attrs do
               attrs[j] = attrs[j] .. '="' .. (require'inspect'(obj.attributes[owners[i]][attrs[j]])):gsub('"','') .. '"'
             end
-            table.insert(attrs, 1, (owners[i]:sub(1, #owner_prefix) == owner_prefix and  owners[i]:sub(#owner_prefix+1) or  owners[i]) .. '-')
-            owners[i] = table.concat(attrs, ':+', 1, #attrs-1) .. '' .. attrs[#attrs]
+            table.insert(attrs, 1, (owners[i]:sub(1, #owner_prefix) == owner_prefix and  owners[i]:sub(#owner_prefix+1) or  owners[i]):gsub('.*/','') .. '-')
+            owners[i] = (table.concat(attrs, '<>', 1, #attrs-1) .. '<>' .. attrs[#attrs]):gsub('-<>','-'):gsub('<>',' ')
           end
           lines[#lines + 1] = owners[#owners]
         end
