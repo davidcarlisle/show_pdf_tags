@@ -472,24 +472,24 @@ local function print_tree_xml(tree)
           lines[#lines + 1] = ' af="yes"'
         end
         if obj.attributes then
-          local owners = {}
-          for k in next, obj.attributes do
-            owners[#owners + 1] = k
-          end
-          table.sort(owners)
-          for i=1, #owners do
-            local attrs = {}
-            for k in next, obj.attributes[owners[i]] do
-              attrs[#attrs + 1] = k
+	  for k,v in pairs(obj.attributes) do
+           local attrns= k:gsub('.*/','')
+	   if attrns=="MathML" then attrns="" end
+            if type(v) == "table" then
+	      if attrns ~= "" then
+                lines[#lines +1] = ' xmlns:' .. attrns .. '="' .. k .. '"'
+		attrns = attrns ..':'
+              end
+              for kk,vv in pairs(v) do
+	        if type(vv) == "table" then
+	          vv = table.concat(vv,' ')
+	        end
+                lines[#lines+1] = ' ' ..attrns .. kk .. '="' .. vv:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+              end
+            else
+              io.stderr:write("Unexpected attributes object\n")
             end
-            table.sort(attrs)
-            for j=1, #attrs do
-              attrs[j] = attrs[j] .. '="' .. (require'inspect'(obj.attributes[owners[i]][attrs[j]])):gsub('"','') .. '"'
-            end
-            table.insert(attrs, 1, (owners[i]:sub(1, #owner_prefix) == owner_prefix and  owners[i]:sub(#owner_prefix+1) or  owners[i]):gsub('.*/','') .. '-')
-            owners[i] = (table.concat(attrs, '<>', 1, #attrs-1) .. '<>' .. attrs[#attrs]):gsub('-<>','-'):gsub('<>',' '):gsub("MathML[-]","")
           end
-          lines[#lines + 1] = owners[#owners]
         end
         -- attributes = convert_attributes(elem.A),
         -- attribute_classes = convert_attribute_classes(elem.C),
