@@ -484,7 +484,7 @@ local function print_tree_xml(tree)
 	        if type(vv) == "table" then
 	          vv = table.concat(vv,' ')
 	        end
-                lines[#lines+1] = ' ' ..attrns .. kk .. '="' .. vv:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+                lines[#lines+1] = ' ' ..attrns .. kk .. '="' .. tostring(vv):gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
               end
             else
               io.stderr:write("Unexpected attributes object\n")
