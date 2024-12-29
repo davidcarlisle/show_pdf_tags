@@ -177,7 +177,7 @@ local function convert(ctx, elem, id, page)
   local role_mapped_s, role_mapped_ns
   ns = ns and ns.NS or default_namespace
   local obj = {
-    subtype = ctx.type_maps[elem.NS and elem.NS.NS or false][elem.S],
+    subtype = ctx.type_maps[elem.NS and tostring(elem.NS) or false][elem.S],
     attributes = convert_attributes(ctx, elem.A, elem.C),
     title = get_string(pdfe.getfromdictionary(elem, 'T')),
     lang = get_string(pdfe.getfromdictionary(elem, 'Lang')),
@@ -252,16 +252,17 @@ local function open(filename)
   do
     local namespaces = structroot.Namespaces
     for i=0, namespaces and #namespaces or 0 do
-      local ns, role_map
+      local ns, ns_key, role_map
       if i == 0 then
-        ns = false
+        ns, ns_key = false, false
         role_map = structroot.RoleMap
       else
         local namespace = namespaces[i]
         ns = namespace.NS
+        ns_key = tostring(namespace)
         role_map = namespace.RoleMapNS
       end
-      type_maps[ns] = setmetatable({}, {__index = function(t, elem)
+      type_maps[ns_key] = setmetatable({}, {__index = function(t, elem)
         local element = {subtype = elem, namespace = ns}
         t[elem] = element
 
@@ -270,7 +271,7 @@ local function open(filename)
           mapped = {mapped, false}
         end
         if mapped then
-          element.mapped = type_maps[mapped[2] and mapped[2].NS][mapped[1]]
+          element.mapped = type_maps[mapped[2] and tostring(mapped[2])][mapped[1]]
         end
         return element
       end})
