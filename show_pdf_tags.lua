@@ -567,24 +567,20 @@ Options
 
 local argi = 1
 while argi < #arg and arg[argi]:match("^%-%-") do
-  if arg[argi] == "--xml" then
+  if arg[argi] == "--tree" then
+    out_format="tree"
+  elseif arg[argi] == "--xml" then
     out_format="xml"
+  elseif arg[argi] == "--table" then
+    out_format="table"
+  elseif arg[argi] == "--map" then
+    follow_rolemap=true
+  elseif arg[argi] == "--help" then
+    io.stderr:write(string.format(helpstr, arg[0]))
+    return
   else
-    if arg[argi] == "--table" then
-      out_format="table"
-    else
-      if arg[argi] == "--map" then
-        follow_rolemap=true
-      else
-        if arg[argi] == "--help" then
-          io.stderr:write(string.format(helpstr, arg[0]))
-          return
-        else
-          io.stderr:write(string.format('Unknown option: %s\n', arg[argi]))
-          return
-        end
-      end
-    end
+    io.stderr:write(string.format('Unknown option: %s\n', arg[argi]))
+    return
   end
   argi=argi+1
 end
