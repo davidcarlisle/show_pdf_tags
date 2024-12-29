@@ -456,7 +456,7 @@ local function print_tree_xml(tree)
 	local mapped = subtype.mapped
 --        mapped = mapped and mapped.subtype or ''
 --        mapped = mapped and ' / ' .. format_subtype(mapped) or ''
-        if follow_rolemap then
+        if follow_rolemap and mapped then
           print(string.format('%s%s', indent, format_subtype_xml(mapped)))
 	else
           print(string.format('%s%s', indent, format_subtype_xml(subtype)))
@@ -530,13 +530,21 @@ local function print_tree_xml(tree)
             print(indent .. '  ' .. l:gsub('\n', '\n' .. indent .. '  '))
           end
           recurse(obj.kids, indent .. ' ')
+        if follow_rolemap and mapped then
+	  print(indent .. "</" .. mapped.subtype ..">")
+	else
 	  print(indent .. "</" .. subtype.subtype ..">")
+	end
         elseif #lines > 0 then
           for i=1, #lines-1 do
             print(indent .. '  ' .. lines[i]:gsub('\n', '\n' .. indent .. '  '))
           end
           print(indent .. '  ' .. lines[#lines]:gsub('\n', '\n' .. indent .. '   '))
-	  print(indent .. "</" .. subtype.subtype ..">")
+          if follow_rolemap and mapped then
+            print(indent .. "</" .. mapped.subtype ..">")
+	  else
+            print(indent .. "</" .. subtype.subtype ..">")
+	  end
         end
       end
     end
