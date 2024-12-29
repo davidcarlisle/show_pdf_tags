@@ -453,10 +453,14 @@ local function print_tree_xml(tree)
         print(string.format('%s<?ReferencedObject%s%s ?>', indent, t, page))
       else
         local subtype = obj.subtype
-        local mapped = subtype.mapped
-        mapped = mapped and mapped.subtype or ''
+	local mapped = subtype.mapped
+--        mapped = mapped and mapped.subtype or ''
 --        mapped = mapped and ' / ' .. format_subtype(mapped) or ''
-        print(string.format('%s%s', indent, format_subtype_xml(subtype)))
+        if follow_rolemap then
+          print(string.format('%s%s', indent, format_subtype_xml(mapped)))
+	else
+          print(string.format('%s%s', indent, format_subtype_xml(subtype)))
+	end
         local lines = {}
         if obj.title then
           lines[#lines + 1] = 'title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
@@ -496,8 +500,17 @@ local function print_tree_xml(tree)
             end
           end
         end
-	if mapped ~= "" then
-          lines[#lines+1] = ' rolemaps-to="' .. mapped .. '"'
+	if mapped and mapped.subtype then
+          if follow_rolemap then
+	    if subtype.namespace then
+              lines[#lines+1] = ' xmlns:orig-ns="' .. subtype.namespace .. '"'
+              lines[#lines+1] = ' rolemapped-from="orig-ns:' .. subtype.subtype .. '"'
+	    else
+              lines[#lines+1] = ' rolemapped-from="' .. subtype.subtype .. '"'
+	    end
+	  else
+            lines[#lines+1] = ' rolemaps-to="' .. mapped.subtype .. '"'
+	  end
 	end
         -- attributes = convert_attributes(elem.A),
         -- attribute_classes = convert_attribute_classes(elem.C),
