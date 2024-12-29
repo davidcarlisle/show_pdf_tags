@@ -557,6 +557,7 @@ local helpstr =[[
 
 Usage: %s options <filename>.pdf
 Options
+  --help           show this help
   --tree (default) show as tree
   --xml            show as XML
   --table          show Lua table structure
