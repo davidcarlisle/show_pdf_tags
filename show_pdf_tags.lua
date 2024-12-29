@@ -4,6 +4,9 @@ if mypath then
   package.path = mypath .. '/?.lua;' .. package.path
 end
 
+local out_format = "tree"
+local follow_rolemap = false
+
 local pdfe = pdfe or require'pdfe'
 local process_stream = require'process_stream'
 local text_string_to_utf8 = require'decode'.text_string_to_utf8
@@ -528,14 +531,60 @@ local function print_tree_xml(tree)
   return recurse(tree, '', '', '', '')
 end
 
-if not arg[1] then
-  io.stderr:write(string.format('Missing argument. Usage: %s <filename>.pdf\n', arg[0]))
+
+local helpstr =[[
+
+Usage: %s options <filename>.pdf
+Options
+  --tree (default) show as tree
+  --xml            show as XML
+  --table          show Lua table structure
+  --map            Follow role mapping (xml printer)
+
+]]
+
+local argi = 1
+while argi < #arg and arg[argi]:match("^%-%-") do
+  if arg[argi] == "--xml" then
+    out_format="xml"
+  else
+    if arg[argi] == "--table" then
+      out_format="table"
+    else
+      if arg[argi] == "--map" then
+        follow_rolemap=true
+      else
+        if arg[argi] == "--help" then
+          io.stderr:write(string.format(helpstr, arg[0]))
+          return
+        else
+          io.stderr:write(string.format('Unknown option: %s\n', arg[argi]))
+          return
+        end
+      end
+    end
+  end
+  argi=argi+1
+end
+
+if argi < #arg then
+  io.stderr:write(string.format('Extra argument. Usage: %s options <filename>.pdf\n', arg[0]))
   return
 end
 
-local struct, ctx = assert(open(arg[1]))
-print_tree_xml(struct, '')
+if argi > #arg then
+  io.stderr:write(string.format('Missing argument. Usage: %s options <filename>.pdf\n', arg[0]))
+  return
+end
 
+local struct, ctx = assert(open(arg[argi]))
 
-
--- print(require'inspect'(struct))
+if out_format=="tree" then
+  print_tree(struct, '')
+else
+  if out_format=="xml" then
+    print_tree_xml(struct, '')
+  else
+  print(require'inspect'(struct))
+  end
+end
