@@ -56,7 +56,8 @@ local pdfdoc_mapping = {
   ['\xA0'] = '\u{20AC}',
 }
 local pdfdoc_to_utf8 = lpeg.Cs((
-    lpeg.R('\x09\x0A', '\x0D\x0D', '\x20\x7E', '\xA1\xAC', '\xAE\xFF')
+    lpeg.R('\x09\x0A', '\x0D\x0D', '\x20\x7E')
+  + lpeg.R('\xA1\xAC', '\xAE\xFF') / function(c) return utf8.char(string.byte(c)) end
   + lpeg.R('\x18\x1F', '\x80\x9E', '\xA0\xA0') / pdfdoc_mapping
 )^0) * -1
 
