@@ -58,7 +58,8 @@ local function convert_objr(ctx, obj, page)
 end
 
 local default_namespace = 'http://iso.org/pdf/ssn'
-local owner_prefix = 'http://typesetting.eu/pdf_attribute_owner/'
+-- this prefix to be confirmed, another possibility would be data:,
+local owner_prefix = 'http://iso.org/pdf/ssn/'
 
 local dehex = lpeg.Cs(
     (lpeg.R('09', 'af', 'AF') * lpeg.R('09', 'af', 'AF') / function(s) return string.char(tonumber(s, 16)) end)^0
