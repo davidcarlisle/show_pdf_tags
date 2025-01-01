@@ -189,6 +189,7 @@ local function convert(ctx, elem, id, page)
     expanded = get_string(pdfe.getfromdictionary(elem, 'E')),
     actual_text = get_string(pdfe.getfromdictionary(elem, 'ActualText')),
     associated_files = elem.AF,
+    id = get_string(pdfe.getfromdictionary(elem, 'ID')),
     kids = convert_kids(ctx, elem),
   }
   ctx.id_map[id] = obj
@@ -463,14 +464,17 @@ local function print_tree_xml(tree)
           print(string.format('%s%s', indent, format_subtype_xml(subtype)))
 	end
         local lines = {}
+        if obj.id then
+          lines[#lines + 1] = ' id="' .. obj.id:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
+        end
         if obj.title then
-          lines[#lines + 1] = 'title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
+          lines[#lines + 1] = ' title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
         end
         if obj.lang then
-          lines[#lines + 1] = 'lang="' .. obj.lang .. '"'
+          lines[#lines + 1] = ' lang="' .. obj.lang .. '"'
         end
         if obj.expanded then
-          lines[#lines + 1] = 'expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
+          lines[#lines + 1] = ' expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
         end
         if obj.alt then
           lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
