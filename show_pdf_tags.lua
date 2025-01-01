@@ -445,12 +445,12 @@ local function print_tree_xml(tree)
   local function recurse(objs, indent)
     for i, obj in ipairs(objs) do
       if obj.type == 'MCR' then
-        print(string.format('%s<?MarkedContent on page %i ?>%s', indent, obj.page, obj.content:gsub('&','&amp;'):gsub('<','&lt;')))
+        print(string.format('%s<?MarkedContent page="%i" ?>%s', indent, obj.page, obj.content:gsub('&','&amp;'):gsub('<','&lt;')))
       elseif obj.type == 'OBJR' then
         local t = obj.Obj.Type
-        t = t and string.format(' of type %s', t) or ''
+        t = t and string.format(' type="%s"', t) or ''
         local page = obj.page
-        page = page and string.format(' on page %i', page) or '' -- TODO: Should eventually become always true
+        page = page and string.format(' page="%i"', page) or '' -- TODO: Should eventually become always true
         print(string.format('%s<?ReferencedObject%s%s ?>', indent, t, page))
       else
         local subtype = obj.subtype
