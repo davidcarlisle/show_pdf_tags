@@ -470,7 +470,7 @@ local function print_tree_xml(tree)
           lines[#lines + 1] = 'lang="' .. obj.lang .. '"'
         end
         if obj.expanded then
-          lines[#lines + 1] = 'expansion="' .. obj.expanded  .. '"'
+          lines[#lines + 1] = 'expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
         end
         if obj.alt then
           lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
