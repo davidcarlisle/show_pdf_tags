@@ -129,7 +129,7 @@ local operators = {
     end
   end,
   BDC = function(scanner, ctx)
-    local props = assert(scanner:popdictionary() or ctx.properties and ctx.properties[scanner:popname()])
+    local props = assert(scanner:popdictionary() or ctx.properties and ctx.properties[scanner:popname()] or {io.stderr:write("Missing Properties\n")})
     local tag = scanner:popname()
     local stack = ctx.marked_stack
     local top = {
