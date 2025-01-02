@@ -72,7 +72,12 @@ local function get_string(t, v, x)
   if x then
     v = assert(dehex:match(v))
   end
-  return assert(text_string_to_utf8:match(v))
+  local u = text_string_to_utf8:match(v)
+  if u == nil then
+    io.stderr:write("\nUTF-8 failure on: " .. v .. "\n")
+    u = "??"
+  end
+  return u
 end
 
 local function pdf2lua(t, v, x)
@@ -467,22 +472,22 @@ local function print_tree_xml(tree)
 	end
         local lines = {}
         if obj.id then
-          lines[#lines + 1] = ' id="' .. obj.id:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
+          lines[#lines + 1] = ' id="' .. obj.id:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
         end
         if obj.title then
-          lines[#lines + 1] = ' title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
+          lines[#lines + 1] = ' title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
         end
         if obj.lang then
           lines[#lines + 1] = ' lang="' .. obj.lang .. '"'
         end
         if obj.expanded then
-          lines[#lines + 1] = ' expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
+          lines[#lines + 1] = ' expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;')  .. '"'
         end
         if obj.alt then
-          lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;')  .. '"'
+          lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;')  .. '"'
         end
         if obj.actual_text then
-          lines[#lines + 1] = ' actualtext="' .. obj.actual_text:gsub('&','&amp;'):gsub('<','&lt;') .. '"'
+          lines[#lines + 1] = ' actualtext="' .. obj.actual_text:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
         end
         if obj.associated_files then
           lines[#lines + 1] = ' af="yes"'
@@ -558,7 +563,15 @@ local function print_tree_xml(tree)
       end
     end
   end
-  return recurse(tree, '', '', '', '')
+  if #tree ==1 then
+    return recurse(tree, '', '', '', '')
+  else
+    io.stderr:write("\nMultiple document elements\n")
+    print ("<Document>")
+    recurse(tree, '  ', '', '', '')
+    print ("</Document>")
+    return
+  end
 end
 
 
