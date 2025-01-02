@@ -487,8 +487,10 @@ local function print_tree_xml(tree)
         end
         if obj.attributes then
 	  for k,v in pairs(obj.attributes) do
-           local attrns= k:gsub('.*/','')
-	   if attrns=="MathML" then attrns="" end
+           local attrns=""
+	   if k~=subtype.namespace then
+	     attrns = k:gsub('.*/','')
+	   end
             if type(v) == "table" then
 	      if attrns ~= "" then
                 lines[#lines +1] = ' xmlns:' .. attrns .. '="' .. k .. '"'
