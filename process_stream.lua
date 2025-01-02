@@ -29,8 +29,8 @@ local cmap_operators = {
           ctx.mapping[in_prefix .. string.char(in_suffix + i)] = out_prefix .. string.char(out_suffix + i)
         end
       else
-        print(require'inspect'{first, last, target, 'bfrange'})
-        error'TODO'
+        io.stderr:write("\ntarget not string: " .. type(target) .. "\n")
+        io.stderr:write(require'inspect'{first, last, target, 'bfrange'})
       end
     end
   end,
