@@ -9,6 +9,7 @@ local utf16be_to_utf8 = lpeg.Cs((
     local hh, hl, lh, ll = string.byte(s, 1, 4)
     return utf8.char(((hh & 3) << 12 | hl << 10 | (lh & 3) << 8 | ll) + 0x10000)
   end
+  + lpeg.Cg(2 * lpeg.Cc('\u{FFFD}'))
 )^0) * -1
 
 local pdfdoc_mapping = {
@@ -21,6 +22,7 @@ local pdfdoc_mapping = {
   ['\x1E'] = '\u{02DA}',
   ['\x1F'] = '\u{02DC}',
 
+  ['\x7F'] = '\u{FFFD}',
   ['\x80'] = '\u{2022}',
   ['\x81'] = '\u{2020}',
   ['\x82'] = '\u{2021}',
@@ -52,13 +54,14 @@ local pdfdoc_mapping = {
   ['\x9C'] = '\u{0153}',
   ['\x9D'] = '\u{0161}',
   ['\x9E'] = '\u{017E}',
-
+  ['\x9F'] = '\u{FFFD}',
   ['\xA0'] = '\u{20AC}',
+  ['\xAD'] = '\u{FFFD}',
 }
 local pdfdoc_to_utf8 = lpeg.Cs((
-    lpeg.R('\x09\x0A', '\x0D\x0D', '\x20\x7E')
+    lpeg.R('\x00\x17', '\x0D\x0D', '\x20\x7E')
   + lpeg.R('\xA1\xAC', '\xAE\xFF') / function(c) return utf8.char(string.byte(c)) end
-  + lpeg.R('\x18\x1F', '\x80\x9E', '\xA0\xA0') / pdfdoc_mapping
+  + lpeg.R('\x18\x1F', '\x7F\xA0', '\xAD\xAD') / pdfdoc_mapping
 )^0) * -1
 
 local text_string_to_utf8 = '\xFE\xFF' * utf16be_to_utf8 + '\u{FEFF}' * lpeg.C(lpeg.P(1)^0) * -1 + pdfdoc_to_utf8
