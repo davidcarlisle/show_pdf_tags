@@ -466,22 +466,22 @@ local function print_tree_xml(tree)
 	end
         local lines = {}
         if obj.id then
-          lines[#lines + 1] = ' id="' .. obj.id:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+          lines[#lines + 1] = ' id="' .. obj.id:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]') .. '"'
         end
         if obj.title then
-          lines[#lines + 1] = ' title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+          lines[#lines + 1] = ' title="' .. obj.title:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]') .. '"'
         end
         if obj.lang then
           lines[#lines + 1] = ' lang="' .. obj.lang .. '"'
         end
         if obj.expanded then
-          lines[#lines + 1] = ' expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;')  .. '"'
+          lines[#lines + 1] = ' expansion="' .. obj.expanded:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]')  .. '"'
         end
         if obj.alt then
-          lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;')  .. '"'
+          lines[#lines + 1] = ' alt="' .. obj.alt:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]')  .. '"'
         end
         if obj.actual_text then
-          lines[#lines + 1] = ' actualtext="' .. obj.actual_text:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+          lines[#lines + 1] = ' actualtext="' .. obj.actual_text:gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]') .. '"'
         end
         if obj.associated_files then
           lines[#lines + 1] = ' af="yes"'
@@ -501,7 +501,7 @@ local function print_tree_xml(tree)
 	        if type(vv) == "table" then
 	          vv = table.concat(vv,' ')
 	        end
-                lines[#lines+1] = ' ' ..attrns .. kk .. '="' .. tostring(vv):gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;') .. '"'
+                lines[#lines+1] = ' ' ..attrns .. kk .. '="' .. tostring(vv):gsub('&','&amp;'):gsub('<','&lt;'):gsub('"','&quot;'):gsub('\0','[NULL]') .. '"'
               end
             else
               io.stderr:write("Unexpected attributes object\n")
