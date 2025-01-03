@@ -185,7 +185,7 @@ local function convert(ctx, elem, id, page)
     expanded = get_string(elem, 'E'),
     actual_text = get_string(elem, 'ActualText'),
     associated_files = elem.AF,
-    id = get_string(pdfe.getfromdictionary(elem, 'ID')),
+    id = get_string(elem, 'ID'),
     kids = convert_kids(ctx, elem),
   }
   ctx.id_map[id] = obj
