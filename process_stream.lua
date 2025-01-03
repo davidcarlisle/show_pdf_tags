@@ -70,7 +70,11 @@ local function print_string(ctx, str, pattern)
   if not pattern or not str then
     str = '\xff\xfd'
   end
-  str = assert(utf16be_to_utf8:match(str))
+  str = utf16be_to_utf8:match(str)
+  if str == nil then
+   io.stderr:write("UTF16 to UTF8 conversion failure\n")
+   str = "??"
+  end
   ctx.text_buffer[#ctx.text_buffer + 1] = str
 end
 
