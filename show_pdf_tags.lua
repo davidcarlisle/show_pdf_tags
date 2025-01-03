@@ -64,7 +64,12 @@ local owner_prefix = 'http://iso.org/pdf/ssn/'
 local function get_string(container, index)
   local text = pdfe.getstring(container, index, true)
   if text then
-    return assert(text_string_to_utf8:match(text))
+    local u = text_string_to_utf8:match(text)
+    if u == nil then
+    io.stderr:write("UTF8 conversion failure\n")
+    u="??"
+    end
+    return u
   else
     return
   end
