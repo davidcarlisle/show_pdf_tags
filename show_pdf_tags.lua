@@ -61,34 +61,24 @@ local default_namespace = 'http://iso.org/pdf/ssn'
 -- this prefix to be confirmed, another possibility would be data:,
 local owner_prefix = 'http://iso.org/pdf/ssn/'
 
-local dehex = lpeg.Cs(
-    (lpeg.R('09', 'af', 'AF') * lpeg.R('09', 'af', 'AF') / function(s) return string.char(tonumber(s, 16)) end)^0
-  * (lpeg.R('09', 'af', 'AF') / function(s) return string.char(tonumber(s, 16) * 16) end)^-1
-) * -1
-local function get_string(t, v, x)
-  local _, t, v, x = almost_resolve(t, v, x)
-  if not t or t < 2 then return end
-  assert(t == 6)
-  if x then
-    v = assert(dehex:match(v))
+local function get_string(container, index)
+  local text = pdfe.getstring(container, index, true)
+  if text then
+    return assert(text_string_to_utf8:match(text))
+  else
+    return
   end
-  local u = text_string_to_utf8:match(v)
-  if u == nil then
-    io.stderr:write("\nUTF-8 failure on: " .. v .. "\n")
-    u = "??"
-  end
-  return u
 end
 
-local function pdf2lua(t, v, x)
+local function pdf2lua(container, index, t, v, x)
   local saved = {}
-  local function recurse(t, v, x)
+  local function recurse(container, index, t, v, x)
     if t == 10 then
       local id
       id, t, v, x = almost_resolve(t, v, x)
       local result = saved[id]
       if result == nil then
-        result = recurse(t, v, x)
+        result = recurse(container, index, t, v, x)
         saved[id] = result
       end
       return result
@@ -98,25 +88,24 @@ local function pdf2lua(t, v, x)
     elseif t < 6 then
       return v
     elseif t == 6 then
-      return get_string(t, v, x)
+      return get_string(container, index)
     elseif t == 7 then
       local arr = {}
       for i=1, #v do
-        arr[i] = pdf2lua(pdfe.getfromarray(v, i))
+        arr[i] = recurse(container, index, pdfe.getfromarray(v, i))
       end
       return arr
     elseif t == 8 then
       local dict = {}
       for i=1, #v do
-        local k, it, iv, ix = pdfe.getfromdictionary(v, i)
-        dict[k] = pdf2lua(it, iv, ix)
+        dict[k] = recurse(v, pdfe.getfromdictionary(v, i))
       end
       return dict
     else
       assert(false, 'Streams are not handled at the moment')
     end
   end
-  return recurse(t, v, i)
+  return recurse(container, index, t, v, i)
 end
 
 local function convert_attributes(ctx, attrs, classes)
@@ -137,7 +126,7 @@ local function convert_attributes(ctx, attrs, classes)
     for i = 1, #attr do
       local key, t, v, extra = pdfe.getfromdictionary(attr, i)
       if key ~= 'O' and key ~= 'NS' then
-        owner_dict[key] = pdf2lua(t, v, extra)
+        owner_dict[key] = pdf2lua(attr, key, t, v, extra)
       end
     end
   end
@@ -190,11 +179,11 @@ local function convert(ctx, elem, id, page)
   local obj = {
     subtype = ctx.type_maps[elem.NS and tostring(elem.NS) or false][elem.S],
     attributes = convert_attributes(ctx, elem.A, elem.C),
-    title = get_string(pdfe.getfromdictionary(elem, 'T')),
-    lang = get_string(pdfe.getfromdictionary(elem, 'Lang')),
-    alt = get_string(pdfe.getfromdictionary(elem, 'Alt')),
-    expanded = get_string(pdfe.getfromdictionary(elem, 'E')),
-    actual_text = get_string(pdfe.getfromdictionary(elem, 'ActualText')),
+    title = get_string(elem, 'T'),
+    lang = get_string(elem, 'Lang'),
+    alt = get_string(elem, 'Alt'),
+    expanded = get_string(elem, 'E'),
+    actual_text = get_string(elem, 'ActualText'),
     associated_files = elem.AF,
     id = get_string(pdfe.getfromdictionary(elem, 'ID')),
     kids = convert_kids(ctx, elem),
