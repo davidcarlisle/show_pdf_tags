@@ -1,5 +1,5 @@
 local lpeg = lpeg or require'lpeg'
-local pdfscanner = pdfscanner or require'pdfscanner'
+local pdfscanner = require'luapdfscanner'
 local utf16be_to_utf8 = require'decode'.utf16be_to_utf8
 local text_string_to_utf8 = require'decode'.text_string_to_utf8
 
