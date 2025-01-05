@@ -36,9 +36,10 @@ local parse_token do
     lpeg.P{(
         (1-l.S'()\\')^1
       + '(' * lpeg.V(1) * ')'
+      + l.Cg('\\' * ('\n' * l.P'\r'^-1 + '\r' * l.P'\n'^-1) * l.Cc'')
       + l.Cg('\\' * (l.R'07' * l.R'07'^-2 / function(s) return char(tonumber(s, 8)) end))
-      + l.Cg('\\' * l.C(l.S'()\\'))
       + l.Cg('\\' * (l.S'nrtbf'/{n = '\n', r = '\r', t = '\t', b = '\b', f = '\f'}))
+      + l.Cg('\\' * l.C(l.S'()\\'^-1))
     )^0}
   ) * ')'
   local hexstring_token = '<' * l.Cs(
