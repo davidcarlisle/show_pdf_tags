@@ -204,10 +204,13 @@ return function(stream, resources)
     end
     stream = arr
   end
-  if pcall(function () return pdfscanner.scan(stream, operators, ctx) end) then
+  local s,e
+  s,e= pcall(function () return pdfscanner.scan(stream, operators, ctx) end)
+  if s  then
  --  io.stderr:write("ok")
   else
-    io.stderr:write("\nError parsing marked content stream, returning empty marked content\n")
+    io.stderr:write("\n\n" ..tostring(e))
+    io.stderr:write("\nError parsing marked content stream, returning empty marked content\n\n")
   end
   return ctx.marked_content_elements
 end
