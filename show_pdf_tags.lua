@@ -110,7 +110,7 @@ local function pdf2lua(container, index, t, v, x)
       assert(false, 'Streams are not handled at the moment')
     end
   end
-  return recurse(container, index, t, v, i)
+  return recurse(container, index, t, v, x)
 end
 
 local function convert_attributes(ctx, attrs, classes)

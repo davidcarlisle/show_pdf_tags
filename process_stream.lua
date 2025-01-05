@@ -1,5 +1,5 @@
 local lpeg = lpeg or require'lpeg'
-local pdfscanner = pdfscanner or require'pdfscanner'
+local pdfscanner = require'luapdfscanner'
 local utf16be_to_utf8 = require'decode'.utf16be_to_utf8
 local text_string_to_utf8 = require'decode'.text_string_to_utf8
 
@@ -18,19 +18,22 @@ local cmap_operators = {
       local target = scanner:popstring() or scanner:poparray()
       local last = scanner:popstring()
       local first = scanner:popstring()
-      assert(first:sub(1, -2) == last:sub(1, -2))
-      if type(target) == 'string' then
-        local in_prefix = first:sub(1, -2)
-        ctx.pattern = ctx.pattern + in_prefix * lpeg.R(first:sub(-1) .. last:sub(-1))
-        local out_prefix = target:sub(1, -2)
-        local in_suffix = first:byte(-1)
-        local out_suffix = target:byte(-1)
-        for i = 0, last:byte(-1) - in_suffix do
-          ctx.mapping[in_prefix .. string.char(in_suffix + i)] = out_prefix .. string.char(out_suffix + i)
+      if first:sub(1, -2) == last:sub(1, -2) then
+        if type(target) == 'string' then
+          local in_prefix = first:sub(1, -2)
+          ctx.pattern = ctx.pattern + in_prefix * lpeg.R(first:sub(-1) .. last:sub(-1))
+          local out_prefix = target:sub(1, -2)
+          local in_suffix = first:byte(-1)
+          local out_suffix = target:byte(-1)
+          for i = 0, last:byte(-1) - in_suffix do
+            ctx.mapping[in_prefix .. string.char(in_suffix + i)] = out_prefix .. string.char(out_suffix + i)
+          end
+        else
+          print(require'inspect'{first, last, target, 'bfrange'})
+          error'TODO'
         end
       else
-        io.stderr:write("\ntarget not string: " .. type(target) .. "\n")
-        io.stderr:write(require'inspect'{first, last, target, 'bfrange'})
+        io.stderr:write("WARNING: Ignoring invalid ToUnicode mapping\n")
       end
     end
   end,
