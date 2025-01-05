@@ -19,18 +19,20 @@ local cmap_operators = {
       local last = scanner:popstring()
       local first = scanner:popstring()
       if first:sub(1, -2) == last:sub(1, -2) then
+        local in_prefix = first:sub(1, -2)
+        ctx.pattern = ctx.pattern + in_prefix * lpeg.R(first:sub(-1) .. last:sub(-1))
+        local in_suffix_begin = first:byte(-1)
+        local in_suffix_end = last:byte(-1)
         if type(target) == 'string' then
-          local in_prefix = first:sub(1, -2)
-          ctx.pattern = ctx.pattern + in_prefix * lpeg.R(first:sub(-1) .. last:sub(-1))
           local out_prefix = target:sub(1, -2)
-          local in_suffix = first:byte(-1)
           local out_suffix = target:byte(-1)
-          for i = 0, last:byte(-1) - in_suffix do
-            ctx.mapping[in_prefix .. string.char(in_suffix + i)] = out_prefix .. string.char(out_suffix + i)
+          for i = 0, in_suffix_end - in_suffix_begin do
+            ctx.mapping[in_prefix .. string.char(in_suffix_begin + i)] = out_prefix .. string.char(out_suffix + i)
           end
         else
-          print(require'inspect'{first, last, target, 'bfrange'})
-          error'TODO'
+          for i = 0, in_suffix_end - in_suffix_begin do
+            ctx.mapping[in_prefix .. string.char(in_suffix_begin + i)] = assert(assert(target[i+1])[2])
+          end
         end
       else
         io.stderr:write("WARNING: Ignoring invalid ToUnicode mapping\n")
