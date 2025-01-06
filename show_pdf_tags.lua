@@ -6,6 +6,7 @@ end
 
 local out_format = "tree"
 local follow_rolemap = false
+local hide_w3c = false
 
 local pdfe = pdfe or require'pdfe'
 local process_stream = require'process_stream'
@@ -331,7 +332,8 @@ end
 
 local function format_subtype_xml(subtype)
   if subtype.namespace then
-    return string.format('<%s xmlns="%s"', subtype.subtype, subtype.namespace)
+    return string.format('<%s xmlns="%s"', subtype.subtype,
+                  (hide_w3c and subtype.namespace:gsub('http://www.w3.org', 'http://-www.w3.org')) or subtype.namespace)
   else
     return "<" .. subtype.subtype
   end
@@ -578,6 +580,7 @@ Options
   --xml            show as XML
   --table          show Lua table structure
   --map            Follow role mapping (xml printer)
+  --w3c-           Add - to w3c namespaces to force browser tree display
 
 ]]
 
@@ -591,6 +594,8 @@ while argi < #arg and arg[argi]:match("^%-%-") do
     out_format="table"
   elseif arg[argi] == "--map" then
     follow_rolemap=true
+  elseif arg[argi] == "--w3c-" then
+    hide_w3c=true
   elseif arg[argi] == "--help" then
     io.stderr:write(string.format(helpstr, arg[0]))
     return
